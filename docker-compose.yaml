@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+
+  nats-publisher:
+    build:
+      context: ./nats-publisher
+    depends_on:
+      - nats
+
+  nats-subscriber:
+    build:
+      context: ./nats-subscriber
+    depends_on:
+      - nats

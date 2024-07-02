@@ -1,8 +1,5 @@
-// nats-publisher/src/main.rs
-
-use async_nats::jetstream::context::Context;
-use async_nats::{Client, Message};
-use futures::stream::StreamExt;
+use async_nats::jetstream;
+use bytes::Bytes;
 use std::error::Error;
 use tokio::time::{sleep, Duration};
 
@@ -14,21 +11,18 @@ const BATCH_SIZE: usize = 25;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let client = async_nats::connect(NATS_URL).await?;
-    let context = Context::new(client);
-
-    let mut messages = vec![];
+    let jetstream = async_nats::jetstream::new(client);
 
     loop {
+        let mut messages: Vec<bytes::Bytes> = vec![];
+
         for _ in 0..BATCH_SIZE {
-            messages.push(Message {
-                subject: TOPIC.into(),
-                data: MESSAGE.into(),
-                ..Default::default()
-            });
+            messages.push(MESSAGE.into());
         }
 
-        context.publish_all(&messages).await?;
-        messages.clear();
+        for message in messages {
+            jetstream.publish(TOPIC.to_string(), message.into()).await?;
+        }
 
         println!("Published a batch of {} messages", BATCH_SIZE);
 

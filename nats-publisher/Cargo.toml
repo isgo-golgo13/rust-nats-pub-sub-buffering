@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-async-nats = "0.16"
+async-nats = "0.35.1"
 futures = "0.3"
+bytes = "1"

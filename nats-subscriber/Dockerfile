@@ -1,5 +1,11 @@
 # Build stage
-FROM rust:latest AS builder
+FROM debian:buster-slim AS builder
+
+RUN apt-get update && \
+    apt-get install -y curl build-essential && \
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+ENV PATH=/root/.cargo/bin:$PATH
 
 WORKDIR /app
 
@@ -13,6 +19,10 @@ FROM debian:buster-slim
 WORKDIR /app
 
 COPY --from=builder /app/target/release/nats-subscriber /usr/local/bin/nats-subscriber
+
+# Install necessary dependencies
+RUN apt-get update && apt-get install -y libssl1.1 ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and group
 RUN groupadd -g 1000 appuser && \
